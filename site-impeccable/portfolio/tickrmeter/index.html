@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<script>document.documentElement.classList.add("js");(function(){try{var q=/[?&]theme=(dark|light)/.exec(location.search);var t=q?q[1]:localStorage.getItem("utf-theme");if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)}catch(e){}})()</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TickrMeter Case Study: E-Ink IoT Stock Ticker | UTF Labs</title>
+<meta name="description" content="How UTF Labs built firmware, a companion app, a cloud platform and OTA updates for TickrMeter, an e-ink stock ticker with 25,000+ devices in use.">
+<link rel="canonical" href="https://www.utf-labs.com/portfolio/tickrmeter/">
+<meta name="theme-color" content="#F7941D">
+<meta name="color-scheme" content="light dark">
+<link rel="preload" href="/site-impeccable/assets/fonts/barlow-condensed-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/site-impeccable/assets/fonts/barlow-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/site-impeccable/assets/css/site.css">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Article",
+      "headline": "TickrMeter: an e-ink stock ticker, from prototype to production",
+      "about": "TickrMeter",
+      "author": {
+        "@id": "https://www.utf-labs.com/#organization"
+      },
+      "publisher": {
+        "@id": "https://www.utf-labs.com/#organization"
+      },
+      "dateModified": "2026-11-20",
+      "image": "https://www.utf-labs.com/assets/img/tickrmeter.webp"
+    },
+    {
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://www.utf-labs.com/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Portfolio",
+          "item": "https://www.utf-labs.com/portfolio/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "TickrMeter",
+          "item": "https://www.utf-labs.com/portfolio/tickrmeter/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-arrow" viewBox="0 0 20 20"><path d="M3 10h13M11 4.5 16.5 10 11 15.5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="square"/></symbol>
+  <symbol id="ic-firmware" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="11" y="11" width="26" height="26"/><path d="M17 4v7M24 4v7M31 4v7M17 37v7M24 37v7M31 37v7M4 17h7M4 24h7M4 31h7M37 17h7M37 24h7M37 31h7"/></g><path class="acc" d="M18 18h12v7l-5 5h-7z"/></symbol>
+  <symbol id="ic-hardware" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="9" width="38" height="30"/><path d="M12 31h8l5-6h11M12 17h10l4 4M30 15v-0"/><circle cx="12" cy="31" r="2"/><circle cx="12" cy="17" r="2"/><circle cx="37" cy="25" r="2"/></g><path class="acc" d="M28 13h9v4l-3 3h-6z"/></symbol>
+  <symbol id="ic-prototype" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="16" width="32" height="24"/><path d="M30 16V5M26 8l4-3 4 3"/><circle cx="17" cy="33" r="2.5"/><circle cx="26" cy="33" r="2.5"/></g><path class="acc" d="M13 21h22v4l-3 3H13z"/></symbol>
+  <symbol id="ic-platform" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="40" height="26"/><path d="M18 42h12M24 34v8M10 27l7-7 6 5 8-9 7 6"/></g><path class="acc" d="M34 12h6v4l-2 2h-4z"/></symbol>
+  <symbol id="ic-testing" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M7 33a17 17 0 0 1 34 0"/><path d="M24 33l8-11M11 33h-4M41 33h-4M24 16v-4M13 21l-3-3M35 21l3-3"/><path d="M5 40h38"/></g><path class="acc" d="M20 30h8v3l-3 3h-5z"/></symbol>
+  <symbol id="ic-consulting" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h22l8 8v30H9z"/><path d="M31 5v8h8M15 21h18M15 27h18M15 33h10"/></g><path class="acc" d="M15 12h9v3l-3 3h-6z"/></symbol>
+  <symbol id="ic-protocol" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="8" width="12" height="12"/><rect x="4" y="28" width="12" height="12"/><rect x="32" y="18" width="12" height="12"/><path d="M16 14h8v10h8M16 34h8V24"/></g><path class="acc" d="M34 20h8v5l-3 3h-5z"/></symbol>
+  <symbol id="ic-cloud" viewBox="0 0 48 48"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M13 34a8 8 0 0 1-1-16 11 11 0 0 1 21-2 9 9 0 0 1 3 18z"/><path d="M16 40v4M24 40v4M32 40v4"/></g><path class="acc" d="M19 24h10v4l-3 3h-7z"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 12 12"><path d="M2 4.5 6 8.5l4-4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+</svg>
+<header class="site-head">
+  <div class="wrap">
+    <a class="brand" href="/site-impeccable/" aria-label="UTF Labs home"><img class="logo-on-light" src="/site-impeccable/assets/img/logo-dark.png" alt="UTF Labs" width="850" height="600"><img class="logo-on-dark" src="/site-impeccable/assets/img/logo-white.png" alt="UTF Labs" width="850" height="600"></a>
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="site-nav">Menu</button>
+    <nav class="nav" id="site-nav" aria-label="Main">
+      <ul>
+        <li class="has-menu">
+          <button class="nav-trigger" type="button" aria-expanded="false" aria-controls="services-menu">Services <svg aria-hidden="true"><use href="#i-chev"/></svg></button>
+          <ul class="submenu" id="services-menu">
+            <li><a href="/site-impeccable/services/iot-development/">IoT development</a></li>
+            <li><a href="/site-impeccable/services/industrial-iot-development/">Industrial IoT</a></li>
+            <li><a href="/site-impeccable/services/embedded-firmware-development/">Embedded firmware</a></li>
+            <li><a href="/site-impeccable/services/iot-hardware-design/">Hardware engineering</a></li>
+            <li><a href="/site-impeccable/services/rapid-prototyping/">Rapid prototyping</a></li>
+            <li><a href="/site-impeccable/services/iot-app-development/">IoT apps</a></li>
+            </ul>
+        </li>
+        <li><a href="/site-impeccable/staff-augmentation/">Hire IoT engineers</a></li>
+        <li><a href="/site-impeccable/portfolio/">Portfolio</a></li>
+        <li><a href="/site-impeccable/about/">About</a></li>
+        <li><a href="/site-impeccable/blog/">Blog</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+      <a class="btn" href="#contact">Book an intro call</a>
+      <div class="region" aria-label="Site region"><span aria-current="page">Global</span><a href="/site-impeccable/pk/" hreflang="en-PK">Pakistan</a></div>
+      <button class="theme-switch" type="button" aria-pressed="false" aria-label="Dark theme"><svg class="i-moon" viewBox="0 0 20 20" aria-hidden="true"><path d="M15.5 12.5A6.5 6.5 0 0 1 7.5 4.5a6.5 6.5 0 1 0 8 8z" fill="none" stroke="currentColor" stroke-width="2"/></svg><svg class="i-sun" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="3.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M10 1.5v2.5M10 16v2.5M1.5 10H4M16 10h2.5M4 4l1.8 1.8M14.2 14.2 16 16M4 16l1.8-1.8M14.2 5.8 16 4" stroke="currentColor" stroke-width="2"/></svg></button>
+    </nav>
+  </div>
+</header>
+<main id="main">
+<nav class="crumbs wrap" aria-label="Breadcrumb"><ol><li><a href="/site-impeccable/">Home</a></li><li><a href="/site-impeccable/portfolio/">Portfolio</a></li><li><span aria-current="page">TickrMeter</span></li></ol></nav>
+  <section class="hero hero--page hero--split" aria-labelledby="h1">
+    <div class="wrap">
+      <div class="field on-orange">
+        <div>
+          <h1 id="h1" class="display">TickrMeter: an e‑ink stock ticker, from prototype to production</h1>
+          <div class="hero-copy">
+            <p class="lead">TickrMeter is a physical stock ticker that sits on your desk and shows live prices on an e-ink display. UTF Labs worked with the TickrMeter team from prototype to final product: device firmware, the companion app, over-the-air updates, manufacturing test procedures and the cloud platform that connects each device. The result is a product with more than 25,000 devices in use, according to the client’s own site.</p>
+          </div>
+        </div>
+        <figure class="hero-photo"><img src="/site-impeccable/assets/img/tickrmeter.webp" alt="TickrMeter e-ink stock tickers stacked on a desk next to the TickrMeter box" width="610" height="460"></figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--tight-bottom" aria-label="Project summary">
+    <div class="wrap">
+      <div class="facts-band">        
+          <dl>
+            <div><dt>Client</dt><dd>TickrMeter Apps (tickrmeter.com)</dd></div>
+            <div><dt>Product</dt><dd>A physical stock ticker on an e-ink display</dd></div>
+            <div><dt>Our role</dt><dd>Firmware, companion app, over-the-air updates, manufacturing test procedures, cloud platform</dd></div>
+            <div><dt>Working together</dt><dd>About two years, according to the client’s testimonial</dd></div>
+            <div><dt>Built with</dt><dd>ESP32, e-ink display, MQTT, React, Node.js</dd></div>
+            <div><dt>Industry</dt><dd>Consumer hardware and fintech</dd></div>
+          </dl>
+          <a class="arrow-link" href="https://www.tickrmeter.com/">Visit tickrmeter.com <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-label="Photos and video">
+    <div class="wrap">
+      <div class="gallery gallery--one">
+        <figure>
+          <button class="video-facade" type="button" data-youtube="qpMh0ycuUBg" aria-label="Play the TickrMeter video (loads YouTube)">
+            <span class="vlabel">TickrMeter video<small>Plays from YouTube when you press play.</small></span>
+            <span class="play"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 18 18"><path d="M4 2l12 7-12 7z" fill="currentColor"/></svg>Play video</span>
+          </button>
+        </figure>
+      </div>
+    </div>
+  </section>
+  <section class="section section--quiet" aria-labelledby="challenge-h">
+    <div class="wrap split">
+      <div class="section-head"><h2 id="challenge-h" class="display">The challenge</h2></div>
+      <div class="prose"><p class="lead-p">Investors and traders watch the market in different ways. Some want a glance, not another bright screen or another app to open. The device had to show prices clearly, run for weeks on a battery, and keep getting new features after it left the factory.</p></div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="built-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="built-h" class="display">What we built</h2>
+      </div>
+      <ul class="blocks">
+        <li><h3>Firmware for the device</h3><p>The device runs on an ESP32 controller and drives an e-ink display. E-ink gives no backlight, so the ticker blends in on a desk like a framed picture, and it uses very little power.</p></li>
+        <li><h3>A companion app and a web interface</h3><p>Owners register a device online and choose which stocks, crypto or other assets to show. They set price alerts that flash, change colour or sound a buzzer, change how often the ticker updates, and set up several modes for different assets from a phone or a browser.</p></li>
+        <li><h3>A cloud platform behind every device</h3><p>The platform registers devices, assigns tickers, and sends price updates to the devices. It uses MQTT for the live data and HTTPS for the rest, with a React management console and a Node.js back end.</p></li>
+        <li><h3>Over-the-air updates</h3><p>Firmware updates reach devices without anyone touching them, which is how the product keeps gaining features. The client’s site says it receives new features through software and firmware updates.</p></li>
+        <li><h3>Manufacturing test procedures</h3><p>We built the quality checks used when the devices are produced, so each unit is tested the same way.</p></li>
+      </ul>
+    </div>
+  </section>
+  <section class="section section--quiet" aria-labelledby="result-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="result-h" class="display">The result</h2>
+      </div>
+      <dl class="figures">
+        <div><dt>25,000+</dt><dd>devices in use<span class="src">Source: tickrmeter.com</span></dd></div>
+        <div><dt>Up to 4 weeks</dt><dd>battery life between charges<span class="src">Source: tickrmeter.com, read 2026-11-17</span></dd></div>
+        <div><dt>New features</dt><dd>through software and firmware updates, delivered to devices already in homes and offices<span class="src">Source: tickrmeter.com</span></dd></div>
+      </dl>
+    </div>
+  </section>
+  <section class="section" aria-label="What the client says">
+    <div class="wrap">
+      <figure class="quote quote--lead">
+        <div>
+          <svg class="qmark" viewBox="0 0 44 32" aria-hidden="true"><path fill="currentColor" d="M0 0h19v13l-6 6H0zM25 0h19v13l-6 6H25z"/></svg>
+          <blockquote><p>“I am working with UTF LABS for approximately two years and found them to be an exceptionally professional team. They assisted throughout the entire process, from prototype to final product, covering app development, firmware, over-the-air firmware flashing, and quality testing procedures for manufacturing. They were always prompt in communication and met all delivery timelines. I can fully recommend UTF LABS as a reliable partner for building and maintaining IoT products.”</p></blockquote>
+        </div>
+        <figcaption><strong>Markus Iversen</strong>TickrMeter Apps</figcaption>
+      </figure>
+    </div>
+  </section>
+  <section class="close" id="contact" aria-labelledby="close-h">
+    <div class="wrap">
+      <div class="field on-orange">
+        <div>
+          <h2 id="close-h" class="display">Building a connected product?</h2>
+          <p class="note">Tell us what you have in mind. We will tell you honestly what it takes.</p>
+        </div>
+        <form class="form" action="/site-impeccable/contact/" method="post" novalidate>
+          <div>
+            <label for="f-name">Name</label>
+            <input id="f-name" name="name" type="text" autocomplete="name" required aria-describedby="e-name">
+            <p class="err" id="e-name">Enter your name.</p>
+          </div>
+          <div>
+            <label for="f-email">Work email</label>
+            <input id="f-email" name="email" type="email" autocomplete="email" required aria-describedby="e-email">
+            <p class="err" id="e-email">Enter a work email, like name@company.com.</p>
+          </div>
+          <div class="full">
+            <label for="f-company">Company <span>(optional)</span></label>
+            <input id="f-company" name="company" type="text" autocomplete="organization">
+          </div>
+          <div class="full">
+            <label for="f-msg">What are you building or what do you need?</label>
+            <textarea id="f-msg" name="message" required aria-describedby="e-msg"></textarea>
+            <p class="err" id="e-msg">Tell us a little about what you need.</p>
+          </div>
+          <div class="form-actions">
+            <button class="btn btn--ink" type="submit">Book an intro call</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </section>
+  <section class="section" aria-labelledby="related-h">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="related-h" class="display">Related</h2>
+      </div>
+      <ul class="cards">
+        <li><span class="tag">IoT</span><h3>En-Stream</h3><p>Energy monitoring for industrial sites.</p><a class="arrow-link" href="/site-impeccable/portfolio/en-stream/">Read the case study <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><span class="tag">IoT</span><h3>Spottherm</h3><p>Furnace temperature monitoring.</p><a class="arrow-link" href="/site-impeccable/portfolio/spottherm/">Read the case study <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+        <li><span class="tag">Service</span><h3>IoT product development</h3><p>How we take a connected product from prototype to production.</p><a class="arrow-link" href="/site-impeccable/services/iot-development/">See the service <svg aria-hidden="true"><use href="#i-arrow"/></svg></a></li>
+      </ul>
+      <nav class="prevnext" aria-label="More projects">
+        <a class="arrow-link" href="/site-impeccable/portfolio/spottherm/">Previous: Spottherm <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="arrow-link" href="/site-impeccable/portfolio/">All projects <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+        <a class="arrow-link" href="/site-impeccable/portfolio/en-stream/">Next: En-Stream <svg aria-hidden="true"><use href="#i-arrow"/></svg></a>
+      </nav>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot on-ink">
+  <div class="wrap">
+    <div class="top">
+      <div class="brand-col">
+        <a href="/site-impeccable/" aria-label="UTF Labs home"><img src="/site-impeccable/assets/img/logo-white.png" alt="UTF Labs" width="850" height="600" loading="lazy"></a>
+      </div>
+      <div>
+        <h2>Services</h2>
+        <ul>
+          <li><a href="/site-impeccable/services/iot-development/">IoT development</a></li>
+          <li><a href="/site-impeccable/services/industrial-iot-development/">Industrial IoT</a></li>
+          <li><a href="/site-impeccable/services/embedded-firmware-development/">Embedded firmware</a></li>
+          <li><a href="/site-impeccable/services/iot-hardware-design/">Hardware engineering</a></li>
+          <li><a href="/site-impeccable/services/rapid-prototyping/">Rapid prototyping</a></li>
+          <li><a href="/site-impeccable/services/iot-app-development/">IoT apps</a></li>
+          <li><a href="/site-impeccable/staff-augmentation/">Hire IoT engineers</a></li>
+          </ul>
+      </div>
+      <div>
+        <h2>Company</h2>
+        <ul>
+          <li><a href="/site-impeccable/about/">About</a></li>
+          <li><a href="/site-impeccable/careers/">Careers</a></li>
+          <li><a href="/site-impeccable/portfolio/">Portfolio</a></li>
+          <li><a href="/site-impeccable/blog/">Blog</a></li>
+          <li><a href="#contact">Contact</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>Offices</h2>
+        <address><strong>Washington, DC</strong><br>UTF Labs LLC, 930 M St NW, Washington, DC 20001, USA<br><a href="tel:+12025390561">+1 (202) 539-0561</a><br><a href="tel:+12028588542">+1 (202) 858-8542</a><br><a href="mailto:info@utf-labs.com">info@utf-labs.com</a></address>
+        <address><strong>Berlin</strong><br>Ufnaustr. 2, 10553 Berlin, Germany</address>
+      </div>
+      <div>
+        <h2>Legal</h2>
+        <ul>
+          <li><a href="/site-impeccable/privacy-policy/">Privacy Policy</a></li>
+          <li><a href="/site-impeccable/terms-and-conditions/">Terms and Conditions</a></li>
+        </ul>
+        <div class="region region--foot" aria-label="Site region"><span aria-current="page">Global</span><a href="/site-impeccable/pk/" hreflang="en-PK">Pakistan</a></div>
+      </div>
+    </div>
+    <div class="bottom">
+      <p>© <span data-year>2026</span> UTF Labs LLC. En-Stream is a UTF Labs product.</p>
+      <div class="social">
+        <a href="https://www.linkedin.com/company/utf-labs/" rel="noopener">LinkedIn</a>
+        <a href="https://www.facebook.com/utflabs" rel="noopener">Facebook</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script src="/site-impeccable/assets/js/site.js" defer></script>
+<!-- PREVIEW ONLY: font picker. Remove before launch. -->
+<script src="/site-impeccable/assets/js/font-preview.js" defer></script>
+</body>
+</html>
